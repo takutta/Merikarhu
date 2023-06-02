@@ -322,13 +322,13 @@ def tulosta_rivi(sisalla, rivi, viime_klo, aiempi_tarve, ryhma_vari):
         muutos = ""
         tarve_yhteenveto = f"<span class='badge text-bg-success'>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-success'>{tarve}</span>"
         if tarve > vastuulliset_summa:
-            tarve_yhteenveto = f"<span class='badge text-bg-danger '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-dark '>{tarve}</span>"
+            tarve_yhteenveto = f"<span class='badge text-bg-dark '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-danger '>{tarve}</span>"
             muutos = f"{tarve - vastuulliset_summa} liian vähän"
         elif tarve < vastuulliset_summa:
-            tarve_yhteenveto = f"<span class='badge text-bg-success '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-warning '>{tarve}</span>"
+            tarve_yhteenveto = f"<span class='badge text-bg-warning '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-success '>{tarve}</span>"
             muutos = f"{vastuulliset_summa - tarve} liian monta"
         elif vastuulliset_summa == 0 and tarve == 0 and muut_summa != 0:
-            tarve_yhteenveto = f"<span class='badge text-bg-success '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-warning '>{tarve}</span>"
+            tarve_yhteenveto = f"<span class='badge text-bg-success '>{vastuulliset_summa}</span> + <span class='badge text-bg-warning '>{muut_summa}</span> / <span class='badge text-bg-success '>{tarve}</span>"
             muutos = f"{vastuulliset_summa - tarve} liian monta"
         tuloste = [
             viime_klo.strftime("%H:%M"),
