@@ -1,7 +1,8 @@
 from random import randint, choice
 from datetime import datetime, time, timedelta
 import locale, math, re
-from titania_import import titania_import
+
+# from titania_import import titania_import
 from merikarhu_helper import html_luonti, html_avaus, viivat
 
 aloitus_pvm = datetime.strptime("20.03.2023", "%d.%m.%Y")
@@ -505,5 +506,5 @@ if __name__ == "__main__":
         }
         data.append(ryhma_data)
 
-    html_tiedosto = html_luonti("tarvetaulukko.html", "merikarhu.html", data)
+    html_tiedosto = html_luonti("tarvetaulukko.html", "index.html", data)
     html_avaus(html_tiedosto)
