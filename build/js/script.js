@@ -1,5 +1,3 @@
-
-
 let siirraAlas = true;
 $(document).ready(function () {
     $("#toggleLapset").click(function () {
@@ -49,4 +47,8 @@ $(document).ready(function () {
         }
         siirraAlas = !siirraAlas;
     });
+
+      
+    
 });
+

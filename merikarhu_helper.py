@@ -2,26 +2,13 @@ import webbrowser, os
 from jinja2 import Environment, FileSystemLoader
 import plotly.graph_objects as go
 import plotly.io as pio
-
-
-# def viivat(klo, kerroin, tyontekijat, muut):
-#     # Luodaan uusi viivadiagrammi
-#     fig = go.Figure()
-
-#     # Lisätään viivat yksi kerrallaan
-#     fig.add_trace(go.Scatter(x=klo, y=kerroin, mode="lines", name="Kerroin"))
-#     fig.add_trace(go.Scatter(x=klo, y=tyontekijat, mode="lines", name="Vastuulliset"))
-#     fig.add_trace(go.Scatter(x=klo, y=muut, mode="lines", name="Muut"))
-
-#     return fig.to_html(full_html=False)
-
+from plotly.offline import plot
 from datetime import datetime, timedelta
 
 
 def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
-    pio.templates.default = "seaborn"  # Esimerkkinä käytetään "plotly_dark" -teemaa
+    pio.templates.default = "seaborn"
 
-    # Muunna kellonajat datetime-objekteiksi
     kellonajat = [datetime.strptime(aika, "%H:%M") for aika in klo]
 
     # Määritä x-akselin merkinnät puolen tunnin välein
@@ -41,45 +28,50 @@ def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
         x_ticktext.append(current_time.strftime("%H:%M"))
         current_time += timedelta(minutes=30)
 
-    # Luodaan uusi viivadiagrammi
     fig = go.Figure()
 
-    # Lisätään viivat yksi kerrallaan
-    fig.add_trace(
-        go.Scatter(
-            x=kellonajat,
-            y=kerroin,
-            mode="lines",
-            name="Kerroin",
-            line=dict(color="black"),
-            hovertemplate="Kellonaika: %{x|%H:%M}<br>Kerroin: %{y}",
-            connectgaps=True,
-        )
-    )
-    fig.add_trace(
-        go.Scatter(
-            x=kellonajat,
-            y=tyontekijat,
-            mode="lines",
-            name="Vastuulliset",
-            line=dict(color="green"),
-            hovertemplate="Kellonaika: %{x|%H:%M}<br>Vastuulliset: %{y}",
-            connectgaps=True,
-        )
-    )
     fig.add_trace(
         go.Scatter(
             x=kellonajat,
             y=muut,
-            mode="lines",
+            mode="markers+lines",  # Lisätty 'markers' mukaan
             name="Muut",
+            marker=dict(color="blue"),
             line=dict(color="blue"),
-            hovertemplate="Kellonaika: %{x|%H:%M}<br>Muut: %{y}",
+            hovertemplate=None,
+            hoveron="points",
             connectgaps=True,
         ),
     )
 
-    # Aseta x-akselin merkinnät
+    fig.add_trace(
+        go.Scatter(
+            x=kellonajat,
+            y=tyontekijat,
+            mode="markers+lines",  # Lisätty 'markers' mukaan
+            name="Vastuulliset",
+            marker=dict(color="green"),
+            line=dict(color="green"),
+            hovertemplate=None,
+            hoveron="points",
+            connectgaps=True,
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=kellonajat,
+            y=kerroin,
+            mode="markers+lines",  # Lisätty 'markers' mukaan
+            name="Kerroin",
+            marker=dict(color="black"),
+            line=dict(color="black"),
+            hovertemplate=None,
+            hoveron="points",
+            connectgaps=True,
+        )
+    )
+
     fig.update_layout(
         yaxis=dict(dtick=1),  # Vain kokonaislukujen kohdalla
         xaxis=dict(
@@ -92,13 +84,16 @@ def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
                 x=0.5,
                 y=1.16,
                 showarrow=False,
-                text=ryhma_nimi,  # Lisää haluamasi otsikko
+                text=ryhma_nimi,
                 font=dict(size=24, color="black"),
             )
         ],
+        hovermode="x unified",
+        legend=dict(traceorder="reversed"),
     )
 
-    return fig.to_html(full_html=False)
+    return plot(fig, output_type="div", include_plotlyjs=False)
+    # return fig.to_html(full_html=False)
 
 
 def html_luonti(template_nimi, html_nimi, tiedot):
