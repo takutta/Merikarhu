@@ -1,9 +1,9 @@
 from random import randint, choice
 from datetime import datetime, time, timedelta
-import locale
-import math
-from titania_import import titania_import
-from jinja_tulostus import jinja_template
+import locale, math, re
+
+# from titania_import import titania_import
+from merikarhu_helper import html_luonti, html_avaus, viivat
 
 aloitus_pvm = datetime.strptime("20.03.2023", "%d.%m.%Y")
 
@@ -173,43 +173,6 @@ def listaa_lapset_tyontekijat(ryhma, paiva):
 
 
 def tiedot(lista):
-    sisalla = []
-    kellonajat = lista[1]
-    paiva = lista[2]
-    tulemattomat = lista[0]
-    viime_klo = None
-    rivi = reset_rivi()
-    aiempi_tarve = None
-    # käydään läpi kaikki kellonajat
-    for klo in kellonajat:
-        # käydään läpi sisällä olevat
-        for s in sisalla:
-            if s.ajat[paiva].lahtoaika == klo:
-                if isinstance(s, Lapsi):
-                    rivi["lapset"] -= 1
-                elif isinstance(s, Tyontekija):
-                    rivi["tyontekijat"] -= 1
-                sisalla.remove(s)
-
-        # käydään läpi tulemattomat
-        for t in tulemattomat:
-            if t.ajat[paiva].tuloaika == klo:
-                if isinstance(t, Lapsi):
-                    rivi["lapset"] += 1
-                elif isinstance(t, Tyontekija):
-                    rivi["tyontekijat"] += 1
-                sisalla.append(t)
-        # tsekataan tarvitseeko tulostaa riviä
-        if klo != viime_klo and viime_klo != None:
-            rivin_tulostus = tulosta_rivi(sisalla, rivi, viime_klo, aiempi_tarve)
-            if rivin_tulostus:
-                aiempi_tarve = rivin_tulostus[0]
-                print(rivin_tulostus[1])
-            rivi = reset_rivi()
-        viime_klo = klo
-
-
-def jinja_tiedot(lista):
     jinja_lista = [
         [
             "klo",
@@ -319,17 +282,17 @@ def tulosta_rivi(sisalla, rivi, viime_klo, aiempi_tarve, ryhma_vari):
             for tyyppi in sisalla
             if isinstance(tyyppi, Lapsi) and tyyppi.spessu == True
         )
-        muutos = ""
-        tarve_yhteenveto = f"<span class='badge text-bg-success'>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-success'>{tarve}</span>"
-        if tarve > vastuulliset_summa:
-            tarve_yhteenveto = f"<span class='badge text-bg-danger '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-dark '>{tarve}</span>"
-            muutos = f"{tarve - vastuulliset_summa} liian vähän"
+
+        if vastuulliset_summa == 0 and tarve == 0 and muut_summa != 0:
+            tarve_yhteenveto = f"<span class='badge text-bg-success '>{vastuulliset_summa}</span> + <span class='badge text-bg-warning '>{muut_summa}</span> / <span class='badge text-bg-success '>{tarve}</span>"
+        elif vastuulliset_summa != 0 and tarve == 0 and muut_summa != 0:
+            tarve_yhteenveto = f"<span class='badge text-bg-warning '>{vastuulliset_summa}</span> + <span class='badge text-bg-warning '>{muut_summa}</span> / <span class='badge text-bg-success '>{tarve}</span>"
+        elif tarve > vastuulliset_summa:
+            tarve_yhteenveto = f"<span class='badge text-bg-dark '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-danger '>{tarve}</span>"
         elif tarve < vastuulliset_summa:
-            tarve_yhteenveto = f"<span class='badge text-bg-success '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-warning '>{tarve}</span>"
-            muutos = f"{vastuulliset_summa - tarve} liian monta"
-        elif vastuulliset_summa == 0 and tarve == 0 and muut_summa != 0:
-            tarve_yhteenveto = f"<span class='badge text-bg-success '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-warning '>{tarve}</span>"
-            muutos = f"{vastuulliset_summa - tarve} liian monta"
+            tarve_yhteenveto = f"<span class='badge text-bg-warning '>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-success '>{tarve}</span>"
+        else:
+            tarve_yhteenveto = f"<span class='badge text-bg-success'>{vastuulliset_summa}</span> + <span class='badge text-bg-light '>{muut_summa}</span> / <span class='badge text-bg-success'>{tarve}</span>"
 
         tuloste = [
             viime_klo.strftime("%H:%M"),
@@ -444,16 +407,6 @@ def generoi_data():
     return ryhmat
 
 
-def luo_lista(ryhmat):
-    # Oravanpesä, maanantai
-    for ryhma in ryhmat:
-        print(f"{ryhma.nimi}:")
-        print(f"klo lapset (kerroin) / työntekijät [tarve] (spessulapset)")
-        lista = listaa_lapset_tyontekijat(ryhma, 0)
-        keraa = tiedot(lista)
-        print()
-
-
 def ryhmien_yhdistys(nimi, ryhma_nimet, ryhmat):
     yhdistetty_ryhma = Ryhma(nimi)
 
@@ -468,14 +421,33 @@ def ryhmien_yhdistys(nimi, ryhma_nimet, ryhmat):
     return yhdistetty_ryhma
 
 
+# p_klo, p_kerroin, p_vastuulliset, p_muut = plotly_esityo(lapset)
+def plotly_esityo(rivit):
+    klo = []
+    kerroin = []
+    vastuulliset = []
+    muut = []
+
+    for sarake in rivit[1:]:
+        klo.append(sarake[0])
+        kerroin.append(sarake[3])
+
+        numerot = re.findall(r"[0-9]+", sarake[4])
+        vastuulliset_num, muut_num, tarve_num = [int(numero) for numero in numerot]
+        vastuulliset.append(vastuulliset_num)
+        muut.append(muut_num)
+
+    return klo, kerroin, vastuulliset, muut
+
+
 if __name__ == "__main__":
     # locale.setlocale(locale.LC_TIME, "fi_FI")
     # titania = titania_import("TPK12063.txt")
     # alkuaika, lahtoaika = aika.split("-")
 
     ryhmat = generoi_data()
-    # luo_lista(ryhmat)
-    data = []
+    paiva_data = []
+    viikko_data = {}
     yhdistetty_data = ryhmat
 
     koko_paivakoti = ryhmien_yhdistys(
@@ -484,12 +456,24 @@ if __name__ == "__main__":
     poop = ryhmien_yhdistys("POOP", ["Oravanpesä", "Pikkuoravat"], ryhmat)
     ryhmat.append(poop)
     ryhmat.append(koko_paivakoti)
-    # "nimi1", "nimi2" --> ryhma("nimi1") & ryhma("nimi2")
+    paivat = 7
 
-    for ryhma in ryhmat:
-        lista = listaa_lapset_tyontekijat(ryhma, 0)
-        lapset = jinja_tiedot(lista)
-        ryhma_data = {"nimi": ryhma.nimi, "väri": ryhma.vari, "lapset": lapset}
-        data.append(ryhma_data)
+    for paiva in range(paivat):
+        for ryhma in ryhmat:
+            # Yksi päivä
+            lista = listaa_lapset_tyontekijat(ryhma, paiva)
+            lapset = tiedot(lista)
+            p_klo, p_kerroin, p_vastuulliset, p_muut = plotly_esityo(lapset)
+            plotly_html = viivat(p_klo, p_kerroin, p_vastuulliset, p_muut, ryhma.nimi)
+            ryhma_data = {
+                "nimi": ryhma.nimi,
+                "väri": ryhma.vari,
+                "lapset": lapset,
+                "kuvaaja": plotly_html,
+            }
+            paiva_data.append(ryhma_data)
+        viikko_data[paiva] = paiva_data
+        paiva_data = []
 
-    jinja_template(data)
+    html_tiedosto = html_luonti("tarvetaulukko.html", f"index.html", viikko_data)
+    html_avaus(html_tiedosto)

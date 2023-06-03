@@ -1,5 +1,4 @@
 from jinja2 import Template
-import webbrowser
 
 
 def jinja_template(data):
@@ -116,29 +115,4 @@ def jinja_template(data):
     """
     )
 
-    # Tulostetaan renderöity taulukko
-    rendered_table = template.render(data=data)
-
-    # Tallennetaan HTML-tiedosto
-    html_filename = "merikarhu.html"
-    with open(html_filename, "w") as file:
-        file.write(rendered_table)
-
-    # Määritä Vivaldi-selain
-    vivaldi_path = r"C:\Users\pampi\AppData\Local\Vivaldi\Application\vivaldi.exe"  # Määritä oikea polku Vivaldi-selaimelle
-
-    # Aseta Vivaldi-selain webbrowser-moduulille
-    webbrowser.register("vivaldi", None, webbrowser.BackgroundBrowser(vivaldi_path))
-
-    # Avaa HTML-tiedosto Vivaldi-selaimessa
-    webbrowser.get("vivaldi").open(
-        "file://" + r"c:\Users\pampi\Documents\dev\Merikarhu\merikarhu.html"
-    )
-
-
-if __name__ == "__main__":
-    data = [
-        ["Omena", "Banaani", "Appelsiini", "Heippadei"],
-        ["Mansikka", "Mustikka", "Vadelma", "Kappas"],
-        ["Sitruuna", "Lime", "Appelsiini", "Semmone"],
-    ]
+    html_tulostus("merikarhu.html", template.render(data=data))
