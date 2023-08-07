@@ -4,6 +4,25 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.offline import plot
 from datetime import datetime, timedelta
+import re
+
+
+def plotly_esityo(rivit):
+    klo = []
+    kerroin = []
+    vastuulliset = []
+    muut = []
+
+    for sarake in rivit[1:]:
+        klo.append(sarake[0])
+        kerroin.append(sarake[3])
+
+        numerot = re.findall(r"[0-9]+", sarake[4])
+        vastuulliset_num, muut_num, tarve_num = [int(numero) for numero in numerot]
+        vastuulliset.append(vastuulliset_num)
+        muut.append(muut_num)
+
+    return klo, kerroin, vastuulliset, muut
 
 
 def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
@@ -14,7 +33,11 @@ def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
     # Määritä x-akselin merkinnät puolen tunnin välein
     x_tickvals = []
     x_ticktext = []
-    current_time = kellonajat[0]
+
+    if len(kellonajat) != 0:
+        current_time = kellonajat[0]
+    else:
+        return False
 
     # Etsi lähin tasa- tai puolituntinen alku- ja loppuaika
     if current_time.minute >= 30:
@@ -34,10 +57,9 @@ def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
         go.Scatter(
             x=kellonajat,
             y=muut,
-            mode="markers+lines",  # Lisätty 'markers' mukaan
             name="Muut",
             marker=dict(color="blue"),
-            line=dict(color="blue"),
+            line=dict(color="blue", shape="hv"),
             hovertemplate=None,
             hoveron="points",
             connectgaps=True,
@@ -48,10 +70,9 @@ def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
         go.Scatter(
             x=kellonajat,
             y=tyontekijat,
-            mode="markers+lines",  # Lisätty 'markers' mukaan
             name="Vastuulliset",
             marker=dict(color="green"),
-            line=dict(color="green"),
+            line=dict(color="green", shape="hv"),
             hovertemplate=None,
             hoveron="points",
             connectgaps=True,
@@ -62,10 +83,9 @@ def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
         go.Scatter(
             x=kellonajat,
             y=kerroin,
-            mode="markers+lines",  # Lisätty 'markers' mukaan
             name="Kerroin",
             marker=dict(color="black"),
-            line=dict(color="black"),
+            line=dict(color="black", shape="hv"),
             hovertemplate=None,
             hoveron="points",
             connectgaps=True,
@@ -91,15 +111,22 @@ def viivat(klo, kerroin, tyontekijat, muut, ryhma_nimi):
         hovermode="x unified",
         legend=dict(traceorder="reversed"),
     )
-
     return plot(fig, output_type="div", include_plotlyjs=False)
-    # return fig.to_html(full_html=False)
 
 
-def html_luonti(template_nimi, html_nimi, tiedot):
+def format_date(value, format="%H:%M %d-%m-%y"):
+    return value.strftime(format)
+
+
+def html_luonti(template_nimi, html_nimi, data, asetukset):
     env = Environment(loader=FileSystemLoader("templates"))
+    env.filters["format_date"] = format_date
     template = env.get_template(template_nimi)
-    html = template.render(data=tiedot)
+
+    # for k, v in asetukset.items():
+    #     print("key:", k, "value:", v)
+
+    html = template.render(data=data, asetukset=asetukset)
     file_name = os.path.join("build", html_nimi)
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(html)

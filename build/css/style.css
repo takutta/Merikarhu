@@ -1,17 +1,40 @@
+#main_tab .nav-tabs {
+    --bs-nav-tabs-border-width: 2px;
+    --bs-nav-tabs-border-radius: 0.8rem;
+    --bs-nav-tabs-link-active-border-color: #a8d8f0 #a8d8f0 #fff;
+    --bs-nav-tabs-border-color: #a8d8f0;
+    --bs-nav-tabs-link-hover-border-color: #ebebff #ebebff #a8d8f0;
+    font-weight:500;
+    
+  }
+
+
+ #kaikki .table-dark {
+    --bs-table-bg: #525252;
+    --bs-table-border-color: #838383;
+  }
+
+#alakuvaajat {
+    clear:both
+}
+
 .text-bg-yellow {
-    background-color: #ffff00
+    background-color: #d5d500
 }
 
 .text-bg-pink {
     background-color: #e91e63
 }
 
+.text-bg-red {
+    background-color: #ff0000
+}
 .text-bg-teal {
     background-color: #009688
 }
 
 .text-bg-purple {
-    background-color: 6200ea
+    background-color: #6200ea
 }
 
 .text-bg-primary {
@@ -19,7 +42,7 @@
 }
 
 .text-yellow {
-    background-color: #ffff00
+    background-color: #d5d500
 }
 
 .text-pink {
@@ -31,7 +54,7 @@
 }
 
 .text-purple {
-    background-color: 6200ea
+    background-color: #6200ea
 }
 
 .text-primary {
@@ -40,9 +63,14 @@
 
 .nav-pills .nav-link.active,
 .nav-pills .show>.nav-link {
-    background-color: rgba(0, 0, 0, 0.4)
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 1px solid #666;
 }
 
+.nav-pills .nav-link {
+
+    border: 1px solid rgba(0,0,0,0);
+}
 .minwidth145 {
     min-width: 145px
 }

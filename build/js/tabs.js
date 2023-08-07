@@ -4,6 +4,7 @@ triggerTabList.forEach(triggerEl => {
 
   triggerEl.addEventListener('click', event => {
     event.preventDefault()
+    alert($($(this).attr('href')).index());
     tabTrigger.show()
   })
 })
