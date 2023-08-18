@@ -324,15 +324,17 @@ if __name__ == "__main__":
     # titania_tt = ti.yhdista_tyontekijat([tt1, tt2])
 
     # tapiola uusi lista
-    df1, pvm_titania = ti.titania_import(r"C:\Users\pampi\Documents\dev\TAP01083.txt")
+    df1, pvm_titania = ti.titania_import(
+        r"C:\Users\pampi\Documents\dev\Hoitoajat\esimerkki\titania1.txt"
+    )
 
     tt1 = ti.df_to_json(df1)
-    df2 = ti.titania_import(r"C:\Users\pampi\Documents\dev\TPK12083.txt")
+    df2 = ti.titania_import(
+        r"C:\Users\pampi\Documents\dev\Hoitoajat\esimerkki\titania2.txt"
+    )
     tt2 = ti.df_to_json(df2[0])
     titania_tt = ti.yhdista_tyontekijat([tt1, tt2])
-    # print(titania_tt)
 
-    # excel_data = ex.lataa_json(r"C:\Users\pampi\merikarhu\input\merikarhu_input.json")
     excel_data = ex.lataa_json(r"C:\Users\pampi\merikarhu\input\merikarhu_input.json")
 
     data = ex.tt_asetukset_synkka(titania_tt, excel_data)

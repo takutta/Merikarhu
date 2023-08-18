@@ -94,7 +94,8 @@ class GUI(Tk):
 
     def start_watchdog(self):
         if self.watchdog is None:
-            txt_maara = int(sys.argv[1]) if len(sys.argv) > 1 else 2
+            txt_maara = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+            print("txt_määrä:", txt_maara)
             self.watchdog = Watchdog(
                 paths=self.watch_paths, logfunc=self.log, gui=self, txt_maara=txt_maara
             )
@@ -113,12 +114,20 @@ class GUI(Tk):
         self.pvm_titania = pvm_titania
 
     def poista_txt(self):
-        [
-            os.remove(os.path.join(r"c:\tyko2000\work", tiedostonimi))
-            for tiedostonimi in os.listdir(r"c:\tyko2000\work")
-            if os.path.isfile(os.path.join(r"c:\tyko2000\work", tiedostonimi))
-            and tiedostonimi.endswith(".txt")
-        ]
+        hakemisto = r"c:\tyko2000\work"
+
+        if os.path.exists(hakemisto) and os.path.isdir(hakemisto):
+            [
+                os.remove(os.path.join(hakemisto, tiedostonimi))
+                for tiedostonimi in os.listdir(hakemisto)
+                if os.path.isfile(os.path.join(hakemisto, tiedostonimi))
+                and tiedostonimi.endswith(".txt")
+            ]
+            print("Tekstitiedostot poistettu onnistuneesti.")
+        else:
+            self.log(
+                """VAROITUS! Tietokoneelta ei löydy Titanian luomaa c:\\tyko2000\\work -kansiota!\nOhjelmaa pitää käyttää Titanian kanssa, SE EI TOIMI ILMAN TITANIAA."""
+            )
 
     def process_data(self):
         # titanioiden yhdistäminen
